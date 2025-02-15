@@ -3,6 +3,7 @@ package visao;
 
 import dao.ConvenioDAO;
 import dao.PacienteDAO;
+import servicos.PacienteServicos;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
@@ -161,54 +162,40 @@ public class GuiCadPaciente extends javax.swing.JInternalFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    
     private void cadastrar() {
-        try {
+    try {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        Paciente pac = new Paciente();
+        pac.setNome(jtNome.getText());
+        pac.setEndereco(jtEndereco.getText());
+        pac.setDataNascimento(sdf.parse(jtDataNasc.getText()));
+        pac.setTelefone(jtTelefone.getText());
+        pac.setCpf(jtCpf.getText());
+        pac.setRg(jtRG.getText());
+        
+        if (jcConvenio.getSelectedIndex() != 0) {
+            String conv = jcConvenio.getSelectedItem().toString();
+            ConvenioDAO convDAO = new ConvenioDAO();
+            // Busca o convênio pelo nome (utilizando a lógica já existente)
+            Convenio convenio = convDAO.buscarConvenioFiltro(conv);
+            pac.setConvenio(convenio.getIdConvenio());
+        } else {
+            JOptionPane.showMessageDialog(this, "Selecione um convênio");
+            return;
+        }
+        
 
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-
-            Paciente pac = new Paciente();
-
-            // Atribuindo valores aos atributos do Paciente com base nos campos preenchidos pelo usuário na tela
-            pac.setNome(jtNome.getText());
-            pac.setEndereco(jtEndereco.getText());
-            pac.setDataNascimento(sdf.parse(jtDataNasc.getText()));
-            pac.setTelefone(jtTelefone.getText());
-            pac.setCpf(jtCpf.getText());
-            pac.setRg(jtRG.getText());
-
-            // Verificando se um convênio foi selecionado no JComboBox
-            if (!(jcConvenio.getSelectedIndex() == 0)) {
-
-                // Obtendo o nome do convênio selecionado pelo usuário
-                String conv = jcConvenio.getSelectedItem().toString();
-
-                // Criando objeto ConvenioDAO para buscar o convênio no banco de dados
-                ConvenioDAO convDAO = new ConvenioDAO();
-
-                // Buscando o convênio no banco de dados com base no nome selecionado pelo usuário
-                Convenio convenio = convDAO.buscarConvenioFiltro(conv);
-
-                // Atribuindo o ID do convênio ao paciente
-                pac.setConvenio(convenio.getIdConvenio());
-
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "Selecione um produto");
-            } // fecha else
-
-           // Criando objeto PacienteDAO para cadastrar o paciente no banco de dados
-            PacienteDAO pacDAO = new PacienteDAO();
-            pacDAO.cadastrarPaciente(pac);
-
-            // Mensagem de sucesso
-            JOptionPane.showMessageDialog(this, "Paciente cadastrado com sucesso!");
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                    "ERRO! " + e.getMessage());
-        } // fecha catch
-
-    }// fecha método
+        PacienteServicos ps = ServicosFactory.getPacienteServicos();
+        ps.cadastrarPaciente(pac);
+        
+        JOptionPane.showMessageDialog(this, "Paciente cadastrado com sucesso!");
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "ERRO! " + e.getMessage());
+    }
+}
+    
+    
 
     //apaga valores dos campos
     private void limpar() {
@@ -220,34 +207,20 @@ public class GuiCadPaciente extends javax.swing.JInternalFrame {
     
     // metodo para preencher o combo box com os produtos cadastrados no banco de dados
     private void preencherCombo() {
-        try {
-
-            // Buscando objeto ProdutoServicos
-            ConvenioServicos ps = ServicosFactory.getConvenioServicos();
-
-            /*
-             * Criando um ArrayList<ProdutoVO> vazio
-             * para receber o ArrayList com os dados
-             */
-            ArrayList<Convenio> p = new ArrayList<>();
-
-            // Recebendo o ArrayList cheio em produtos
-            p = ps.buscarConvenio();
-
-            // Adicionando os dados do ArrayList no JComboBox
-            jcConvenio.addItem("-Selecione-");
-            for (int i = 0; i < p.size(); i++) {
-
-                // Adicionando o nome do convênio ao JComboBox
-                jcConvenio.addItem(p.get(i).getNomeConvenio());
-
-            } // fecha for
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                    "Erro! " + e.getMessage());
-        } // fecha catch
-    }// fecha classe
+    try {
+        // Adiciona o item padrão ANTES de buscar convênios
+        jcConvenio.addItem("-Selecione-");
+        
+        ConvenioServicos ps = ServicosFactory.getConvenioServicos();
+        ArrayList<Convenio> p = ps.buscarConvenio();
+        
+        for (Convenio c : p) {
+            jcConvenio.addItem(c.getNomeConvenio());
+        }
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Erro! " + e.getMessage());
+    }
+}
 
     private void jbLimparActionPerformed(java.awt.event.ActionEvent evt) {
         limpar();

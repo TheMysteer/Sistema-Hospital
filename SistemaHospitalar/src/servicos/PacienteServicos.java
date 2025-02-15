@@ -19,17 +19,33 @@ A classe PacienteServicos representa a camada de serviços da aplicação, ela u
 operações de leitura e escrita no banco de dados.
  */
 public class PacienteServicos {
-
-    // Método para cadastrar um paciente
+    
+    // Método para cadastrar um paciente com validações
     public void cadastrarPaciente(Paciente pac) throws SQLException {
-
-        // Busca da Fábrica um obj. PacienteDAO
+        // Validação do campo obrigatório "Nome"
+        if (pac.getNome() == null || pac.getNome().trim().isEmpty()) {
+            throw new IllegalArgumentException("Nome é obrigatório");
+        }
+        // Verificação de CPF duplicado
+        if (cpfJaCadastrado(pac.getCpf())) {
+            throw new IllegalArgumentException("CPF já cadastrado");
+        }
+        // Busca da Fábrica um objeto PacienteDAO
         PacienteDAO pacDAO = DAOFactory.getPacienteDAO();
-
-        // Chamando método cadastrarPaciente para enviar o obj. pac
+        // Chamando o método de cadastro no DAO
         pacDAO.cadastrarPaciente(pac);
     }
-
+    
+    // Método auxiliar para verificar se o CPF já está cadastrado
+    private boolean cpfJaCadastrado(String cpf) throws SQLException {
+        PacienteDAO pacDAO = DAOFactory.getPacienteDAO();
+        ArrayList<Paciente> lista = pacDAO.buscarPacientePorCpf(cpf);
+        return !lista.isEmpty();
+    }
+    
+    
+    
+    
     // Método para buscar um paciente por ID
     public ArrayList<Paciente> buscarPacienteFiltro(String query) throws SQLException {
 

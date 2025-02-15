@@ -79,10 +79,10 @@ public class ConvenioDAO {
             // Se houver algum erro na busca, lança uma exceção SQLException
             throw new SQLException("Erro ao buscar dados do Banco! " + se.getMessage());
         } finally {
-
-            //Fechando a conexão com o banco de dados
-            con.close();
-        }
+            if (con != null) {
+                con.close();
+         }
+}
 
     }
 

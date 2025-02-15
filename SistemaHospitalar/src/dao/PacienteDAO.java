@@ -175,5 +175,35 @@ public class PacienteDAO {
             con.close();
         }
     }
+    
+    // NOVO: Método para buscar pacientes por CPF utilizando Prepared Statement
+    public ArrayList<Paciente> buscarPacientePorCpf(String cpf) throws SQLException {
+        ResultSet rs;
+        try {
+            String sql = "SELECT * FROM paciente WHERE CPF = ?";
+            this.con = this.conexao.getConexao();
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setString(1, cpf);
+            rs = pst.executeQuery();
+            ArrayList<Paciente> pacientes = new ArrayList<>();
+            while (rs.next()) {
+                Paciente pac = new Paciente();
+                pac.setIdPaciente(rs.getInt("ID_PACIENTE"));
+                pac.setNome(rs.getString("NOME"));
+                pac.setEndereco(rs.getString("ENDERECO"));
+                pac.setDataNascimento(rs.getDate("DATA_NASC"));
+                pac.setTelefone(rs.getString("TELEFONE"));
+                pac.setCpf(rs.getString("CPF"));
+                pac.setRg(rs.getString("RG"));
+                pac.setIdConvenio(rs.getInt("ID_CONVENIO_FK"));
+                pacientes.add(pac);
+            }
+            return pacientes;
+        } catch (SQLException se) {
+            throw new SQLException("Erro ao buscar dados do Banco! " + se.getMessage());
+        } finally {
+            con.close();
+        }
+    }
 
 }
